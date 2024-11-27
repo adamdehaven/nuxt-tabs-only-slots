@@ -2,8 +2,8 @@
   <div
     class="tab-item"
     role="tabpanel"
-    :id="`panel-${id}`"
-    :aria-labelledby="`tab-${id}`"
+    :id="`panel-${itemId}`"
+    :aria-labelledby="`tab-${itemId}`"
     v-show="isSelected"
     tabindex="0"
   >
@@ -20,8 +20,11 @@ const props = defineProps<{
   active?: boolean
 }>()
 
-const slots = useSlots()
-const id = useId()
+const itemId = useId()
+const slots = defineSlots<{
+  default(): any
+  header(): any
+}>()
 
 const context = inject<TabContext>(TAB_CONTEXT_KEY)
 
@@ -33,19 +36,19 @@ const { selectedId, registerPanel, unregisterPanel } = context
 
 registerPanel({
   header: () => slots.header?.(),
-  id
+  id: itemId,
 })
 
-const isSelected = computed(() => selectedId.value === id)
+const isSelected = computed(() => selectedId.value === itemId)
 
 watch(() => props.active, (value) => {
-  if (value && selectedId.value !== id) {
-    selectedId.value = id
+  if (value && selectedId.value !== itemId) {
+    selectedId.value = itemId
   }
 }, { immediate: true })
 
 onBeforeUnmount(() => {
-  unregisterPanel(id)
+  unregisterPanel(itemId)
 })
 </script>
 

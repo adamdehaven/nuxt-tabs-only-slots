@@ -30,7 +30,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide, onMounted } from 'vue'
 import type { TabPanel } from '~/types/tabs'
 import { TAB_CONTEXT_KEY } from '~/types/tabs'
 
@@ -42,8 +41,12 @@ defineProps({
   }
 })
 
-const selectedId = ref<string | null>(null)
+// Replace with useState
 const panels = ref<TabPanel[]>([])
+const selectedId = ref<string | null>(null)
+const slots = defineSlots<{
+  default(): any
+}>()
 
 function registerPanel(panel: TabPanel): void {
   const existingPanel = panels.value.find(p => p.id === panel.id)
