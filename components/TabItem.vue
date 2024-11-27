@@ -1,13 +1,18 @@
 <template>
   <div
-    class="tab-item"
-    role="tabpanel"
-    :id="`panel-${itemId}`"
-    :aria-labelledby="`tab-${itemId}`"
-    v-show="isSelected"
+    role="tab"
+    class="tab"
+    :class="{ 'tab-active': isSelected }"
+    :id="`tab-${itemId}`"
+    :aria-controls="`panel-${itemId}`"
+    :aria-selected="isSelected"
     tabindex="0"
+    @click="selectedId = itemId"
   >
-    <slot />
+    <!-- Use MDCSlot and unwrap `p` tag -->
+    <slot name="header">
+      {{ header }}
+    </slot>
   </div>
 </template>
 
@@ -18,6 +23,7 @@ import { TAB_CONTEXT_KEY } from '~/types/tabs'
 
 const props = defineProps<{
   active?: boolean
+  header?: string
 }>()
 
 const itemId = useId()
@@ -36,6 +42,7 @@ const { selectedId, registerPanel, unregisterPanel } = context
 
 registerPanel({
   header: () => slots.header?.(),
+  content: () => slots.default?.(),
   id: itemId,
 })
 
@@ -53,12 +60,28 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.tab-item:focus {
-  outline: none;
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  background-color: #eee;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
-.tab-item:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
+.tab:hover {
+  color: #111827;
+}
+
+.tab-active,
+.tab-active:hover {
+  color: #007ac1;
+  background-color: #ccc;
 }
 </style>

@@ -8,23 +8,23 @@
       role="tablist"
       :aria-orientation="orientation"
     >
-      <button
-        v-for="panel in panels"
-        :key="panel.id"
-        role="tab"
-        class="tab"
-        :class="{ 'tab-active': selectedId === panel.id }"
-        :id="`tab-${panel.id}`"
-        :aria-controls="`panel-${panel.id}`"
-        :aria-selected="selectedId === panel.id"
-        :tabindex="selectedId === panel.id ? 0 : -1"
-        @click="selectedId = panel.id"
-      >
-        <component :is="panel.header" />
-      </button>
-    </div>
-    <div class="tab-panels">
+      <!-- Use MDCSlot and unwrap `p` tag -->
       <slot />
+    </div>
+    <div class="tab-panels" data-allow-mismatch="children">
+      <div
+        v-if="slotCount === panels.length"
+        v-for="panel in panels.sort((a, b) => a.order! - b.order!)"
+        :key="panel.id"
+        class="tab-item"
+        role="tabpanel"
+        :id="`panel-${panel.id}`"
+        :aria-labelledby="`tab-${panel.id}`"
+        v-show="selectedId === panel.id"
+        tabindex="0"
+      >
+        <component :is="panel.content" />
+      </div>
     </div>
   </div>
 </template>
@@ -48,13 +48,22 @@ const slots = defineSlots<{
   default(): any
 }>()
 
+const slotCount = computed(() => slots.default?.().length || 0)
+
+// Once the panel count matches the slot count, activate the first tab if no tab is active
+watch(() => panels.value.length, (panelCount) => {
+  if (panelCount === slotCount.value && !selectedId.value) {
+    selectedId.value = panels.value[0].id
+  }
+})
+
 function registerPanel(panel: TabPanel): void {
   const existingPanel = panels.value.find(p => p.id === panel.id)
   if (!existingPanel) {
-    panels.value.push(panel)
-    if (!selectedId.value) {
-      selectedId.value = panel.id
-    }
+    panels.value.push({
+      ...panel,
+      order: panels.value.length + 1
+    })
   }
 }
 
@@ -83,6 +92,7 @@ provide(TAB_CONTEXT_KEY, {
   gap: 16px;
   border-bottom: 2px solid #e5e7eb;
   margin-bottom: 16px;
+  padding-bottom: 8px;
   min-height: 35px;
 }
 
@@ -124,24 +134,21 @@ provide(TAB_CONTEXT_KEY, {
   flex: 1;
 }
 
-.tab {
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 16px;
-  color: #6b7280;
-  transition: all 0.2s ease;
-}
-
-.tab:hover {
-  color: #111827;
-}
-
-.tab-active {
-  color: #111827;
-}
-
 .tab-panels {
   padding: 16px 0;
+}
+
+.tab-item:focus {
+  outline: none;
+}
+
+.tab-item:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+:deep(h2) {
+  margin-top: 0;
+  padding-top: 0;
 }
 </style>

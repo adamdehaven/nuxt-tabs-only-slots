@@ -1,8 +1,10 @@
 import type { Ref } from 'vue'
 
 export interface TabPanel {
-  header: () => any
   id: string
+  header: () => any
+  content: () => any
+  order?: number
 }
 
 export interface TabContext {

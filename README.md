@@ -1,6 +1,24 @@
-# Nuxt 3 Minimal Starter
+# Nuxt Tabs Only Slots
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+```md
+::tab-group
+  :::tab-item
+  #header
+  First Tab
+
+  #default
+  This is the content for my first tab
+  :::
+
+  :::tab-item
+  ---
+  active: true
+  header: "My tab title"
+  ---
+  The second tab is initially active and uses the header prop.
+  :::
+::
+```
 
 ## Setup
 
