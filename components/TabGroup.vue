@@ -1,26 +1,39 @@
 <template>
-  <div class="tab-group" :class="orientation">
-    <div class="tab-list" role="tablist">
+  <div
+    class="tab-group"
+    :class="orientation"
+  >
+    <div
+      class="tab-list"
+      role="tablist"
+      :aria-orientation="orientation"
+    >
       <button
-        v-for="(panel, index) in panels"
-        :key="index"
+        v-for="panel in panels"
+        :key="panel.id"
         role="tab"
         class="tab"
-        :class="{ 'tab-active': selectedIndex === index }"
-        :aria-selected="selectedIndex === index"
-        :tabindex="selectedIndex === index ? 0 : -1"
-        @click="selectedIndex = index"
+        :class="{ 'tab-active': selectedId === panel.id }"
+        :id="`tab-${panel.id}`"
+        :aria-controls="`panel-${panel.id}`"
+        :aria-selected="selectedId === panel.id"
+        :tabindex="selectedId === panel.id ? 0 : -1"
+        @click="selectedId = panel.id"
       >
         <component :is="panel.header" />
       </button>
     </div>
-    <div class="tab-panels" role="tabpanels">
-      <slot name="default" />
+    <div class="tab-panels">
+      <slot />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, provide, onMounted } from 'vue'
+import type { TabPanel } from '~/types/tabs'
+import { TAB_CONTEXT_KEY } from '~/types/tabs'
+
 const props = defineProps({
   orientation: {
     type: String,
@@ -29,7 +42,32 @@ const props = defineProps({
   }
 })
 
-const { panels, selectedIndex } = createTabContext()
+const selectedId = ref<string | null>(null)
+const panels = ref<TabPanel[]>([])
+
+function registerPanel(panel: TabPanel): void {
+  const existingPanel = panels.value.find(p => p.id === panel.id)
+  if (!existingPanel) {
+    panels.value.push(panel)
+    if (!selectedId.value) {
+      selectedId.value = panel.id
+    }
+  }
+}
+
+function unregisterPanel(id: string): void {
+  panels.value = panels.value.filter(panel => panel.id !== id)
+  if (selectedId.value === id) {
+    selectedId.value = panels.value[0]?.id || null
+  }
+}
+
+provide(TAB_CONTEXT_KEY, {
+  selectedId,
+  panels,
+  registerPanel,
+  unregisterPanel
+})
 </script>
 
 <style scoped>
@@ -42,6 +80,7 @@ const { panels, selectedIndex } = createTabContext()
   gap: 16px;
   border-bottom: 2px solid #e5e7eb;
   margin-bottom: 16px;
+  min-height: 35px;
 }
 
 .tab-group.horizontal .tab {
