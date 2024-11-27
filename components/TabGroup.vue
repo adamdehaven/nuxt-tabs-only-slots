@@ -34,7 +34,7 @@ import { ref, provide, onMounted } from 'vue'
 import type { TabPanel } from '~/types/tabs'
 import { TAB_CONTEXT_KEY } from '~/types/tabs'
 
-const props = defineProps({
+defineProps({
   orientation: {
     type: String,
     default: 'horizontal',
